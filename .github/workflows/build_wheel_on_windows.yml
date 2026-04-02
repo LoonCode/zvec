@@ -1,8 +1,6 @@
 name: Build and Test PyPi Wheels on Windows
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_call:
     inputs:
       publish_target:
@@ -71,6 +69,8 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: recursive
+          fetch-tags: true
+          fetch-depth: 0
 
       - name: Cleanup left marker files
         run: |
@@ -80,6 +80,11 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+
+      - name: Set up MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
       - name: Install cibuildwheel
         run: |
@@ -100,6 +105,11 @@ jobs:
       - name: Build wheels using cibuildwheel
         if: steps.cache-wheels.outputs.cache-hit != 'true'
         shell: powershell
+#        env:
+#          CIBW_BUILD_VERBOSITY: 1
+#          CIBW_DEBUG_TRACEBACK: 1
+#          CIBW_DEBUG_KEEP_CONTAINER: 1
+
         run: |
           python -m cibuildwheel --output-dir wheelhouse
 
